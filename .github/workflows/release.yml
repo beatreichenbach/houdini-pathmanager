@@ -1,0 +1,35 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build ZIP file
+        run: |
+          mkdir -p build/pathmanager/python
+          cp -r pathmanager build/pathmanager/python/
+          cp -r python_panels build/pathmanager/
+          cp *.json build/
+          cp *.xml build/
+          python -m pip install -r requirements.txt --target build/pathmanager/python
+          rm -rf build/pathmanager/python/bin build/pathmanager/python/*.dist-info
+          cd build
+          zip -r ../pathmanager-${{ github.ref_name }}.zip .
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: pathmanager-${{ github.ref_name }}.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

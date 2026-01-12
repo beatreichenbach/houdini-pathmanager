@@ -3,6 +3,8 @@
 Path Manager is a tool for SideFX Houdini to manage file paths. It allows the user to replace and change paths,
 and copy or move files.
 
+![Screenshot](.github/assets/header.png)
+
 ## Installation
 
 Meadow is installed as a Houdini Package.
@@ -26,42 +28,3 @@ Meadow is installed as a Houdini Package.
 
 MIT License. Copyright 2026 - Beat Reichenbach.
 See the [License file](LICENSE) for details.
-
-## Features
-
-### Filters:
-- node path
-- node type
-- parm name
-- parm type
-
-- Show empty parameters
-- show missing paths
-
-### Replace Path
-- methods:
-  - replace
-    - regex
-    - glob
-    - match case
-  - copy
-  - move
-  - search
-  - version
-    - set version latest
-    - set version
-- preserve relative structure
-- relative root
-
-### Path Mode
-- Make paths relative to $HIP, limit parent dirs
-- expand/collapse variables
-
-- <UDIM>, $F, $F4
-- Preview
-- icon for status
-- context:
-  - Open in explorer
-  - copy path
-  - go to node
-
