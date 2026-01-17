@@ -1,3 +1,4 @@
+import difflib
 import logging
 from typing import Any
 
@@ -66,11 +67,8 @@ class ParameterWidget(QtWidgets.QWidget):
         return values
 
 
-class PreviewField(Field):
-    def create_item(self, value: schema.Item.Preview) -> QtGui.QStandardItem:
-        item = super().create_item(value.path)
-        item.setData(value.highlight, QtCore.Qt.ItemDataRole.UserRole)
-        return item
+# class HtmlField(Field):
+#     def create_item(self, value: Any) -> QtGui.QStandardItem:
 
 
 class PathManager(QtWidgets.QWidget):
@@ -104,14 +102,12 @@ class PathManager(QtWidgets.QWidget):
         filter_widget = MultiFilterWidget('Status')
         self.browser.add_column(field=Field('status'), filter_widget=filter_widget)
 
-        delegate = HighlightDelegate()
-        delegate.set_padding(QtCore.QSize(0, 16))
         filter_widget = BasicFilterWidget('Path', cls=str)
-        self.browser.add_column(
-            field=Field('path'), filter_widget=filter_widget, delegate=delegate
-        )
+        self.browser.add_column(field=Field('path'), filter_widget=filter_widget)
 
-        self.browser.add_column(field=PreviewField('preview'), delegate=delegate)
+        delegate = HtmlDelegate()
+        delegate.set_padding(QtCore.QSize(0, 16))
+        self.browser.add_column(field=Field('preview'), delegate=delegate)
 
         for widget in self.browser.filter_list.filter_widgets():
             widget.set_collapsed(False)
@@ -257,3 +253,70 @@ class HighlightDelegate(StyledItemDelegate):
             painter.setClipRect(option.rect)
             painter.drawRect(highlight_rect)
             painter.restore()
+
+
+class HtmlDelegate(StyledItemDelegate):
+    """A delegate that draws HTML text. Does not elide text."""
+
+    HtmlRole = QtCore.Qt.ItemDataRole.UserRole
+
+    def __init__(self, parent: QtWidgets.QWidget | None = None) -> None:
+        super().__init__(parent)
+
+        self._document = QtGui.QTextDocument()
+
+    def paint(
+        self,
+        painter: QtGui.QPainter,
+        option: QtWidgets.QStyleOptionViewItem,
+        index: QtCore.QModelIndex,
+    ) -> None:
+        self.initStyleOption(option, index)
+
+        self._document.setHtml(option.text)
+
+        if option.widget:
+            style = option.widget.style()
+        else:
+            style = QtWidgets.QApplication.style()
+
+        if option.state & QtWidgets.QStyle.StateFlag.State_Selected:
+            option.text = self._document.toPlainText()
+            style.drawControl(
+                QtWidgets.QStyle.ControlElement.CE_ItemViewItem, option, painter
+            )
+            return
+
+        # Draw plain control (background, check marks, icon, focus rect, ...)
+        option.text = ''
+        style.drawControl(
+            QtWidgets.QStyle.ControlElement.CE_ItemViewItem, option, painter
+        )
+
+        # Match the text layout of QCommonStyle.viewItemDrawText
+        sub_element = QtWidgets.QStyle.SubElement.SE_ItemViewItemText
+        rect = style.subElementRect(sub_element, option, option.widget)
+
+        document_size = self._document.size()
+        layout_rect = style.alignedRect(
+            option.direction,
+            option.displayAlignment,
+            document_size.toSize(),
+            rect,
+        )
+
+        # Draw
+        painter.save()
+        painter.setClipRect(option.rect)
+        painter.translate(layout_rect.topLeft())
+        self._document.drawContents(painter)
+        painter.restore()
+
+    def sizeHint(
+        self, option: QtWidgets.QStyleOptionViewItem, index: QtCore.QModelIndex
+    ) -> QtCore.QSize:
+        self.initStyleOption(option, index)
+        self._document.setHtml(option.text)
+        size_hint = self._document.size().toSize()
+        size_hint += self._padding
+        return size_hint

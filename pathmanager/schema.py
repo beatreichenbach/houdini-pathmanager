@@ -24,17 +24,12 @@ class AnchorMethod(enum.Enum):
 
 @dataclasses.dataclass
 class Item:
-    @dataclasses.dataclass
-    class Preview:
-        path: str = ''
-        highlight: str = ''
-
     name: str
     parm_type: str
     node_path: str
     status: str
     path: str
-    preview: Preview = dataclasses.field(default_factory=Preview)
+    preview: str = ''
 
 
 class ParmType(metaclass=meta.IterMeta):

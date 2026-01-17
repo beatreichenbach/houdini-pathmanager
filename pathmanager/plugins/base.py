@@ -1,8 +1,12 @@
+import difflib
+import html
 import logging
 from abc import ABC
 from typing import Sequence
 
+from PySide6.QtTest import QTest
 from qt_parameters import ParameterForm
+from qtpy import QtGui, QtWidgets
 
 from pathmanager import schema, utils
 
@@ -33,15 +37,40 @@ class Plugin(ABC):
     def form(self) -> ParameterForm | None:
         return None
 
-    def _get_difference(self, str_a: str, str_b: str) -> str:
-        min_length = min(len(str_a), len(str_b))
-        for i in range(min_length):
-            if str_a[i] != str_b[i]:
-                return str_b[i:]
-        return str_b[min_length:]
+    @staticmethod
+    def _get_html(str1, str2):
+        str1 = html.escape(str1)
+        str2 = html.escape(str2)
 
-    def _get_preview(self, path: str, original: str) -> schema.Item.Preview:
-        preview = schema.Item.Preview(
-            path=path, highlight=self._get_difference(original, path)
-        )
-        return preview
+        matcher = difflib.SequenceMatcher(None, str1, str2)
+        diff = matcher.get_opcodes()
+
+        palette = QtWidgets.QApplication.palette()
+        color = palette.color(QtGui.QPalette.ColorRole.Accent)
+        color.setAlphaF(0.5)
+
+        htmlcolor = qcolor_to_html_rgba(color)
+
+        result = []
+        for tag, i1, i2, j1, j2 in diff:
+            if tag == 'equal':
+                result.append(str1[i1:i2])
+            elif tag == 'delete':
+                pass
+            elif tag == 'insert':
+                result.append(
+                    f'<span style="background-color: {htmlcolor};">{str2[j1:j2]}</span>'
+                )
+            elif tag == 'replace':
+                result.append(
+                    f'<span style="background-color: {htmlcolor};">{str2[j1:j2]}</span>'
+                )
+        return ''.join(result)
+
+
+def qcolor_to_html_rgba(qcolor):
+    r, g, b, a = qcolor.getRgb()
+    if a == 255:
+        return f"#{r:02x}{g:02x}{b:02x}"
+    else:
+        return f"rgba({r}, {g}, {b}, {a/255:.2f})"

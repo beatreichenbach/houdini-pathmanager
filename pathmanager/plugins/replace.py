@@ -28,12 +28,14 @@ class ReplacePlugin(base.Plugin):
             regex=options.regex,
             match_case=options.match_case,
         )
+
+        replace = re.escape(options.replace)
         for item in items:
             path = item.path
-            new_path = pattern.sub(options.replace, path)
+            new_path = pattern.sub(replace, path)
             if new_path == path:
                 new_path = ''
-            item.preview = self._get_preview(new_path, path)
+            item.preview = self._get_html(path, new_path)
 
     def form(self) -> ParameterForm | None:
         form = ParameterForm()
