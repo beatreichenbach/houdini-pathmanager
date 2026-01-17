@@ -23,19 +23,32 @@ class ReplacePlugin(base.Plugin):
     def preview(self, items: Sequence[schema.Item], kwargs: dict) -> None:
         options = Options(**kwargs)
 
-        pattern = self._get_pattern(
-            search=options.search,
-            regex=options.regex,
-            match_case=options.match_case,
-        )
+        # TODO: limit only if from is set.
 
-        replace = re.escape(options.replace)
+        flags = 0 if options.match_case else re.IGNORECASE
+        if options.regex:
+            pattern = re.compile(options.search, flags=flags)
+            replace = options.replace
+        else:
+            # The fnmatch case sensitivity depends on OS, so use re.compile.
+            pattern_str = fnmatch.translate(options.search)[:-2]
+            pattern = re.compile(pattern_str, flags=flags)
+
+            # Escape special characters
+            replace = options.replace.encode('unicode_escape').decode('ascii')
+
         for item in items:
             path = item.path
-            new_path = pattern.sub(replace, path)
+            try:
+                new_path = pattern.sub(replace, path)
+                new_path = new_path.replace('\\', '/').replace('//', '/')
+            except re.error:
+                new_path = ''
+
             if new_path == path:
                 new_path = ''
-            item.preview = self._get_html(path, new_path)
+            # item.preview = self._get_html(path, new_path)
+            item.preview = new_path
 
     def form(self) -> ParameterForm | None:
         form = ParameterForm()
@@ -58,11 +71,5 @@ class ReplacePlugin(base.Plugin):
 
     @staticmethod
     def _get_pattern(search: str, regex: bool, match_case: bool) -> re.Pattern:
-        flags = 0 if match_case else re.IGNORECASE
-        if regex:
-            pattern = re.compile(search, flags=flags)
-        else:
-            # The fnmatch case sensitivity depends on OS, so use re.compile.
-            pattern_str = fnmatch.translate(search)[:-2]
-            pattern = re.compile(pattern_str, flags=flags)
+
         return pattern

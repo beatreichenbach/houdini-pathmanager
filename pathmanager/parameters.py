@@ -14,6 +14,7 @@
         parm = BoolParameter('match_case')
         form.add_parameter(parm)
 
+
         # Copy / Move
         form = ParameterForm('copy')
         self.forms[ModifyMethod.COPY] = form

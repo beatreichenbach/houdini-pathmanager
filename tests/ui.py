@@ -11,6 +11,7 @@ def main() -> None:
         host = TestHost()
         manager = PathManager()
         manager.set_host(host)
+
         manager.show()
 
 

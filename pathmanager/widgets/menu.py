@@ -86,6 +86,7 @@ class SelectionMenu(QtWidgets.QMenu):
         action.setChecked(checked)
         action.setData(data)
         action.triggered.connect(lambda: self._item_toggled())
+        self.addAction(action)
 
     def set_items(self, items: Sequence | Mapping) -> None:
         """

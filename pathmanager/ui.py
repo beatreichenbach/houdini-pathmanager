@@ -7,8 +7,9 @@ from qtpy import QtCore, QtGui, QtWidgets
 
 from pathmanager import schema
 from pathmanager.hosts import base
+from pathmanager.plugins.cp import CopyPlugin
 from pathmanager.plugins.replace import ReplacePlugin
-from pathmanager.widgets.browser import FilterBrowser, Group
+from pathmanager.widgets.browser import FilterBrowser, Group, Stack
 from pathmanager.widgets.button import CheckBoxButton
 from pathmanager.widgets.filter import BasicFilterWidget, MultiFilterWidget
 from pathmanager.widgets.tree import Field, StyledItemDelegate
@@ -22,7 +23,10 @@ class ParameterWidget(QtWidgets.QWidget):
     def __init__(self, parent: QtWidgets.QWidget | None = None) -> None:
         super().__init__(parent=parent)
 
-        self.plugins = (ReplacePlugin(),)
+        self.plugins = (
+            ReplacePlugin(),
+            CopyPlugin(),
+        )
         self.forms = {}
 
         self._init_ui()
@@ -61,7 +65,7 @@ class ParameterWidget(QtWidgets.QWidget):
 
     def values(self) -> dict:
         name = self.plugin_parm.value()
-        plugin = self.plugins[0]
+        plugin = next(iter(p for p in self.plugins if p.name == name), None)
         form = self.forms[name]
         values = {'plugin': plugin, 'values': form.values()}
         return values
@@ -107,17 +111,19 @@ class PathManager(QtWidgets.QWidget):
 
         delegate = HtmlDelegate()
         delegate.set_padding(QtCore.QSize(0, 16))
-        self.browser.add_column(field=Field('preview'), delegate=delegate)
+        self.browser.add_column(
+            field=Field('preview', editable=True), delegate=delegate
+        )
 
         for widget in self.browser.filter_list.filter_widgets():
             widget.set_collapsed(False)
 
         self.browser.toggle_filter_list()
 
-        groups = (
-            Group(name='node_path'),
-            Group(name='path'),
-        )
+        stacks = (Stack(name='path'),)
+        self.browser.set_stacks(stacks)
+
+        groups = (Group(name='node_path'),)
         self.browser.set_groups(groups)
 
         layout.addWidget(self.browser)

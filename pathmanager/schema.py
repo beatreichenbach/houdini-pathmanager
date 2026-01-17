@@ -23,7 +23,7 @@ class AnchorMethod(enum.Enum):
 
 
 @dataclasses.dataclass
-class Item:
+class Item(meta.Sortable):
     name: str
     parm_type: str
     node_path: str
@@ -57,12 +57,6 @@ class Options:
         match_case: bool
 
     @dataclasses.dataclass
-    class Copy:
-        destination: str
-        relative_root_enabled: bool
-        relative_root: str
-
-    @dataclasses.dataclass
     class Move:
         destination: str
         relative_root_enabled: bool
@@ -84,7 +78,6 @@ class Options:
 
     method: ModifyMethod = ModifyMethod.REPLACE
     replace: Replace = dataclasses.field(default_factory=Replace)
-    copy: Copy = dataclasses.field(default_factory=Copy)
     move: Move = dataclasses.field(default_factory=Move)
     find: Find = dataclasses.field(default_factory=Find)
     version: Version = dataclasses.field(default_factory=Version)

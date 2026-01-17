@@ -57,6 +57,7 @@ class TestHost(Host):
             path=path,
         )
         items.append(item)
+        items.append(item)
 
         return tuple(items)
 
@@ -83,15 +84,9 @@ class TestHost(Host):
             path = os.path.join(source_dir, f'texture_{i:03d}.png')
             paths.append(path)
 
-            path = os.path.join(source_dir, f'texture_{i:03d}.tx')
-            paths.append(path)
-
         # UDIM
         for i in range(1001, 1025):
             path = os.path.join(source_dir, f'texture.{i}.png')
-            paths.append(path)
-
-            path = os.path.join(source_dir, f'texture.{i}.tx')
             paths.append(path)
 
         # File sequence
