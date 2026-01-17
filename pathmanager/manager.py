@@ -3,7 +3,7 @@ import enum
 import re
 from collections.abc import Sequence
 
-import hou
+# import hou
 
 
 class Status(enum.Enum):
@@ -35,13 +35,6 @@ class Item:
     status: str
     path: str
     preview: str = ''
-
-
-class ParmType(enum.Enum):
-    FILE = hou.fileType.Any
-    IMAGE = hou.fileType.Image
-    GEOMETRY = hou.fileType.Geometry
-    DIRECTORY = hou.fileType.Directory
 
 
 @dataclasses.dataclass
@@ -124,14 +117,3 @@ class Manager:
                         items.append(item)
 
         return tuple(items)
-
-    def update_previews(self, items: Sequence[Item], options: Options) -> None:
-        if options.method == ModifyMethod.REPLACE:
-            for item in items:
-                preview = item.path.replace(
-                    options.replace.search, options.replace.replace
-                )
-                if preview == item.path:
-                    preview = ''
-
-                item.preview = preview

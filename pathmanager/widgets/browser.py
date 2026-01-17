@@ -11,7 +11,7 @@ from qt_material_icons import MaterialIcon
 from qtpy import QtCore, QtGui, QtWidgets
 
 from pathmanager import utils
-from .filter import FilterListWidget, FilterState, FilterWidget
+from pathmanager.widgets.filter import FilterListWidget, FilterState, FilterWidget
 from .menu import RadioMenu, SelectionMenu
 from .search import SearchLineEdit
 from .tree import (

@@ -21,5 +21,5 @@ def application() -> Generator[QtWidgets.QApplication, None]:
 
 
 def init() -> None:
-    logging.getLogger().setLevel(logging.INFO)
+    logging.basicConfig(level=logging.INFO)
     logging.getLogger(pathmanager.__name__).setLevel(logging.DEBUG)

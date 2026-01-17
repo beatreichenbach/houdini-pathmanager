@@ -11,7 +11,7 @@ from qt_material_icons import MaterialIcon
 from qtpy import QtCore, QtGui, QtWidgets
 
 from pathmanager import utils
-from .filter import Filter
+from pathmanager.widgets.filter import Filter
 
 StateFlag = QtWidgets.QStyle.StateFlag
 CheckState = QtCore.Qt.CheckState

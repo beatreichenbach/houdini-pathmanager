@@ -1,6 +1,15 @@
-from qt_parameters import EnumParameter, ParameterWidget, PathParameter
+import logging
+
 import hou
-from qtpy import QtWidgets
+from qt_parameters import CollapsibleBox, EnumParameter, PathParameter
+from qtpy import QtCore, QtGui, QtWidgets
+
+from . import base
+
+logger = logging.getLogger(__name__)
+
+
+class HoudiniHost(base.Host): ...
 
 
 class HoudiniPathParameter(PathParameter):
@@ -55,3 +64,46 @@ class HoudiniEnumParameter(EnumParameter):
 
         self._layout.addWidget(self.combo)
         self.setFocusProxy(self.combo)
+
+
+def patch_collapsible_box() -> None:
+    """
+    Overwrite the paintEvent to use a flat surface as Houdini draws QFrames with
+    a beveled line.
+    """
+
+    if hasattr(CollapsibleBox, '__patched__'):
+        return
+
+    def paint_event(self, event: QtGui.QPaintEvent) -> None:
+        if self._style != CollapsibleBox.Style.BUTTON:
+            QtWidgets.QFrame.paintEvent(self, event)
+            return
+
+        painter = QtGui.QPainter(self)
+        style = self.style()
+
+        if self._collapsed:
+            option = QtWidgets.QStyleOptionButton()
+            option.initFrom(self)
+            if self.underMouse():
+                option.state |= QtWidgets.QStyle.StateFlag.State_MouseOver
+
+            element = QtWidgets.QStyle.PrimitiveElement.PE_PanelButtonCommand
+            style.drawPrimitive(element, option, painter, self)
+        else:
+            palette = self.palette()
+            color = palette.color(
+                QtGui.QPalette.ColorGroup.Normal, QtGui.QPalette.ColorRole.Window
+            )
+
+            option = QtWidgets.QStyleOption()
+            option.initFrom(self)
+
+            painter.setPen(QtCore.Qt.PenStyle.NoPen)
+            painter.setBrush(color.lighter(120))
+            painter.drawRect(option.rect)
+
+    CollapsibleBox.paintEvent = paint_event
+    CollapsibleBox.__patched__ = True
+    logger.debug(f'Patched {CollapsibleBox.__name__}')

@@ -8,7 +8,7 @@ from typing import Any, Iterator, SupportsIndex, TypeVar
 from qt_material_icons import MaterialIcon
 from qtpy import QtGui
 
-from heist import utils
+from pathmanager import utils
 
 T_co = TypeVar('T_co', covariant=True)
 

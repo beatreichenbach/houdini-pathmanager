@@ -5,9 +5,9 @@ import dataclasses
 from qtpy import QtCore
 
 import tests
-from pathmanager.tree import Field
+from pathmanager.widgets.tree import Field
 from tests import application
-from pathmanager.browser import Browser, Group
+from pathmanager.widgets.browser import Browser
 
 
 @dataclasses.dataclass
