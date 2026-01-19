@@ -41,35 +41,46 @@ class PathManager(QtWidgets.QWidget):
         self.browser.model_expired.connect(self._load_items)
         layout.addWidget(self.browser)
 
-        filter_widget = BasicFilterWidget('Name', cls=str)
-        self.browser.add_column(field=Field('parm_name'), filter_widget=filter_widget)
+        self.browser.add_column(
+            field=Field('parm_name'),
+            filter_widget=BasicFilterWidget('Parm Name', cls=str),
+        )
 
-        filter_widget = StyledFilterWidget('Parm Type')
         self.browser.add_column(
             field=Field('parm_type'),
-            filter_widget=filter_widget,
+            filter_widget=StyledFilterWidget('Parm Type'),
             delegate=StyledDelegate(),
         )
 
-        filter_widget = BasicFilterWidget('Node', cls=str)
-        self.browser.add_column(field=Field('node_path'), filter_widget=filter_widget)
+        self.browser.add_column(
+            field=Field('node_path'),
+            filter_widget=BasicFilterWidget('Node Path', cls=str),
+        )
 
-        filter_widget = StyledFilterWidget('Status')
+        self.browser.add_column(
+            field=Field('node_type.category', label='Node Category'),
+            filter_widget=BasicFilterWidget('Node Type Category', cls=str),
+        )
+
+        self.browser.add_column(
+            field=Field('node_type.name', label='Node Type'),
+            filter_widget=BasicFilterWidget('Node Type Name', cls=str),
+        )
+
         self.browser.add_column(
             field=Field('status'),
-            filter_widget=filter_widget,
+            filter_widget=StyledFilterWidget('Status'),
             delegate=StyledDelegate(),
         )
 
-        filter_widget = BasicFilterWidget('Path', cls=str)
-        self.browser.add_column(field=PathField('path'), filter_widget=filter_widget)
+        self.browser.add_column(
+            field=PathField('path'), filter_widget=BasicFilterWidget('Path', cls=str)
+        )
 
-        self.browser.add_column(field=PreviewField('preview', editable=True))
+        self.browser.add_column(field=PreviewField('preview'))
 
         for widget in self.browser.filter_list.filter_widgets():
             widget.set_collapsed(False)
-
-        self.browser.toggle_filter_list()
 
         # Toolbar
         stacks = (Stack(name='path'),)
@@ -84,6 +95,7 @@ class PathManager(QtWidgets.QWidget):
 
         # Parameters
         self.parameters_widget = ParametersWidget()
+        self.parameters_widget.parameter_changed.connect(self._values_changed)
         layout.addWidget(self.parameters_widget)
 
         # Button Layout
@@ -135,8 +147,10 @@ class PathManager(QtWidgets.QWidget):
         items = self._host.get_items(selected=selected)
         self.browser.add_elements(items)
 
+        self._preview_items()
+
     def _refresh_items(self) -> None:
-        self.browser.model.refresh_column(5)
+        self.browser.model.refresh_column(7)
 
     def _preview_items(self) -> None:
         values = self.parameters_widget.values()
@@ -155,7 +169,8 @@ class PathManager(QtWidgets.QWidget):
         if selected:
             items = self.browser.selected_elements()
         else:
-            items = self.browser.elements()
+            items = self.browser.visible_elements()
 
         plugin.process(items, values)
+        self._host.update_items(items)
         self._load_items()

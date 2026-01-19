@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<menuDocument>
+    <menu>
+        <subMenu id="panetype_misc">
+
+            <label>Misc</label>
+
+            <actionItem id="pythonpanel::pathmanager">
+                <label>Path Manager</label>
+            </actionItem>
+
+        </subMenu>
+    </menu>
+</menuDocument>

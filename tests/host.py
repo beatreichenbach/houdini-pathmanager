@@ -1,7 +1,8 @@
 import shutil
+from typing import Sequence
 
 import tests
-from pathmanager.core import Host
+from pathmanager.core import Host, schema
 from pathmanager.core.schema import Item, NodeType, ParmTypes, Statuses
 
 import os
@@ -46,7 +47,7 @@ class TestHost(Host):
                 parm_type=ParmTypes.GEOMETRY,
                 node_path=f'/stage/geo_{i}',
                 node_type=node_type,
-                path=Item.Path(raw='$HIP/geo/cube/v1/cube.$F4.bgeo.sc', expanded=''),
+                path=Item.Path(raw='$HIP/geo/cube/v1/cube.$F4.bgeo.sc'),
                 status=Statuses.STACK,
             )
             items.append(item)
@@ -56,7 +57,7 @@ class TestHost(Host):
                 parm_type=ParmTypes.GEOMETRY,
                 node_path=f'/stage/geo_{i}',
                 node_type=node_type,
-                path=Item.Path(raw='$HIP/geo/cube/v2/cube.$F4.bgeo.sc', expanded=''),
+                path=Item.Path(raw='$HIP/geo/cube/v2/cube.$F4.bgeo.sc'),
                 status=Statuses.MISSING,
             )
             items.append(item)
@@ -76,7 +77,7 @@ class TestHost(Host):
                     parm_type=ParmTypes.IMAGE,
                     node_path=f'/stage/image_{j}',
                     node_type=node_type,
-                    path=Item.Path(raw=path, expanded=''),
+                    path=Item.Path(raw=path),
                     status=Statuses.FOUND,
                 )
                 items.append(item)
@@ -90,7 +91,7 @@ class TestHost(Host):
             parm_type=ParmTypes.IMAGE,
             node_path='/stage/image',
             node_type=node_type,
-            path=Item.Path(raw=path, expanded=''),
+            path=Item.Path(raw=path),
             status=Statuses.STACK,
         )
         items.append(item)
@@ -104,13 +105,18 @@ class TestHost(Host):
             parm_type=ParmTypes.IMAGE,
             node_path='/stage/image',
             node_type=node_type,
-            path=Item.Path(raw=path, expanded=''),
+            path=Item.Path(raw=path),
             status=Statuses.STACK,
         )
         items.append(item)
         items.append(item)
 
         return tuple(items)
+
+    def update_items(self, items: Sequence[schema.Item]) -> None:
+        for item in items:
+            item.path = schema.Item.Path(raw=item.preview.raw)
+            item.preview = schema.Item.Preview()
 
     @staticmethod
     def _generate_data() -> None:

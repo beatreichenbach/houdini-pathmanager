@@ -1,25 +1,16 @@
-import dataclasses
 from collections.abc import Sequence
 
 from qt_parameters import ComboParameter, IntParameter, StringParameter
 
-from ..core import schema
+from pathmanager.core import schema
 from pathmanager.qt_parameters import ParameterForm
 from . import base
-
-
-@dataclasses.dataclass
-class Options:
-    version: int = -1
-    pattern: str = 'v(\d+)'
 
 
 class VersionPlugin(base.Plugin):
     name = 'version'
 
     def preview(self, items: Sequence[schema.Item], kwargs: dict) -> None: ...
-
-    def process(self, items: Sequence[schema.Item], kwargs: dict) -> None: ...
 
     def form(self) -> ParameterForm | None:
         form = ParameterForm('version')

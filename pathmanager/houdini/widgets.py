@@ -5,6 +5,8 @@ import hou
 from qt_parameters import CollapsibleBox, EnumParameter, PathParameter
 from qtpy import QtCore, QtGui, QtWidgets
 
+from pathmanager.widgets import Browser
+
 logger = logging.getLogger(__name__)
 
 
@@ -103,3 +105,15 @@ def patch_collapsible_box() -> None:
     CollapsibleBox.paintEvent = paint_event
     CollapsibleBox.__patched__ = True
     logger.debug(f'Patched {CollapsibleBox.__name__}')
+
+
+def patch_browser() -> None:
+    app = QtWidgets.QApplication.instance()
+    palette = QtWidgets.QApplication.palette()
+    # QAbstractItemView alternating row color fix
+    palette.setColor(
+        QtGui.QPalette.ColorRole.AlternateBase,
+        palette.color(QtGui.QPalette.ColorRole.Window),
+    )
+    if isinstance(app, QtWidgets.QApplication):
+        app.setPalette(palette, 'QAbstractItemView')

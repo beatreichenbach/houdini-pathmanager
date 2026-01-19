@@ -1,8 +1,7 @@
-import dataclasses
 import enum
 from collections.abc import Sequence
 
-from ..core import schema
+from pathmanager.core import schema
 from pathmanager.qt_parameters import EnumParameter, IntParameter, ParameterForm
 from . import base
 
@@ -13,18 +12,15 @@ class AnchorMethod(enum.Enum):
     ABSOLUTE = 'Absolute'
 
 
-@dataclasses.dataclass
-class Options:
-    version: int = -1
-    pattern: str = 'v(\d+)'
-
-
 class RelativePlugin(base.Plugin):
     name = 'relative'
 
-    def preview(self, items: Sequence[schema.Item], kwargs: dict) -> None: ...
+    def preview(self, items: Sequence[schema.Item], kwargs: dict) -> None:
+        plugin_values = kwargs.get('relative', {})
 
-    def process(self, items: Sequence[schema.Item], kwargs: dict) -> None: ...
+        mode = plugin_values.get('mode', '')
+        parents = plugin_values.get('parents', 0)
+        parents_enable = plugin_values.get('parents_enable', False)
 
     def form(self) -> ParameterForm | None:
         form = ParameterForm('relative')

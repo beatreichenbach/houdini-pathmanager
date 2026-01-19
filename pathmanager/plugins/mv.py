@@ -1,7 +1,7 @@
 import dataclasses
 from collections.abc import Sequence
 
-from ..core import schema
+from pathmanager.core import schema
 from pathmanager.qt_parameters import ParameterForm, PathParameter
 from . import base
 

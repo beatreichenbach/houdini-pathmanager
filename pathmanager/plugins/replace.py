@@ -1,59 +1,59 @@
-import dataclasses
 import fnmatch
 import re
 from collections.abc import Sequence
 
 from qt_parameters import BoolParameter, ParameterForm, StringParameter
 
-from ..core import schema
+from pathmanager.core import schema
 from . import base
-
-
-@dataclasses.dataclass
-class Options:
-    search: str
-    replace: str
-    regex: bool
-    match_case: bool
 
 
 class ReplacePlugin(base.Plugin):
     name = 'replace'
 
     def preview(self, items: Sequence[schema.Item], kwargs: dict) -> None:
-        options = Options(**kwargs)
+        plugin_values = kwargs.get('replace', {})
+        search = plugin_values.get('search', '')
+        replace = plugin_values.get('replace', '')
+        regex = plugin_values.get('regex', False)
+        match_case = plugin_values.get('match_case', False)
+        use_forward_slashes = kwargs.get('use_forward_slashes', False)
 
-        use_forward_slashes = True
+        if not search:
+            return
 
-        # TODO: limit only if from is set.
+        try:
+            flags = 0 if match_case else re.IGNORECASE
+            if regex:
+                pattern = re.compile(search, flags=flags)
+            else:
+                # The fnmatch case sensitivity depends on OS, so use re.compile.
+                pattern_str = fnmatch.translate(search)[:-2]
+                pattern = re.compile(pattern_str, flags=flags)
 
-        flags = 0 if options.match_case else re.IGNORECASE
-        if options.regex:
-            pattern = re.compile(options.search, flags=flags)
-            replace = options.replace
-        else:
-            # The fnmatch case sensitivity depends on OS, so use re.compile.
-            pattern_str = fnmatch.translate(options.search)[:-2]
-            pattern = re.compile(pattern_str, flags=flags)
-
-            # Escape special characters
-            replace = options.replace.encode('unicode_escape').decode('ascii')
+                # Escape special characters
+                replace = replace.encode('unicode_escape').decode('ascii')
+        except re.error:
+            for item in items:
+                item.preview.error = 'Error in search pattern'
+            return
 
         for item in items:
-            path = item.path
+            path = item.path.raw
+            preview = schema.Item.Preview()
+
             try:
-                new_path = pattern.sub(replace, path)
+                preview.raw = pattern.sub(replace, path)
             except re.error:
-                new_path = ''
+                preview.error = 'Regex error'
 
             if use_forward_slashes:
-                new_path = new_path.replace('\\', '/').replace('//', '/')
+                preview.raw = preview.raw.replace('\\', '/').replace('//', '/')
 
-            if new_path == path:
-                new_path = ''
+            if preview.raw == path:
+                preview.raw = ''
 
-            # item.preview = self._get_html(path, new_path)
-            item.preview = new_path
+            item.preview = preview
 
     def form(self) -> ParameterForm | None:
         form = ParameterForm('replace')
@@ -73,8 +73,3 @@ class ReplacePlugin(base.Plugin):
         form.add_parameter(parm)
 
         return form
-
-    @staticmethod
-    def _get_pattern(search: str, regex: bool, match_case: bool) -> re.Pattern:
-
-        return pattern

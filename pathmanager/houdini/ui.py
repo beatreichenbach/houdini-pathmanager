@@ -1,13 +1,17 @@
-from pathmanager.houdini.host import HoudiniHost
-from pathmanager.ui.manager import PathManager
+from qtpy import QtWidgets
 
-widgets: list[PathManager] = []
+from pathmanager.houdini import host
+from pathmanager.ui import manager
+
+widgets: list[manager.PathManager] = []
 
 
-def get_manager() -> PathManager:
-    widget = PathManager()
-    host = HoudiniHost()
-    widget.set_host(host)
+def get_manager() -> QtWidgets.QWidget:
+    QtWidgets.QApplication.instance()
+
+    widget = manager.PathManager()
+    houdini_host = host.HoudiniHost()
+    widget.set_host(houdini_host)
     widgets.append(widget)
     return widget
 

@@ -66,7 +66,6 @@ See the [License file](LICENSE) for details.
   - go to node
 
 
-
 ## Notes
 
 - Get stacks for cp, mv
@@ -77,4 +76,6 @@ highlight changes
 
 validate:
 - root directory
-- 
+
+
+# TODO: qt_parameters:             option.features |= QStyleOptionTab.TabFeature.HasFrame

@@ -193,6 +193,23 @@ class Browser(QtWidgets.QWidget):
         self.model.remove_element(element)
         self._refresh_hierarchy()
 
+    def visible_elements(self, parent: QtCore.QModelIndex | None = None) -> tuple:
+        """Return all elements visible in the ProxyModel."""
+
+        if parent is None:
+            parent = QtCore.QModelIndex()
+
+        elements = []
+        for row in range(self.proxy.rowCount(parent)):
+            index = self.proxy.index(row, 0, parent)
+            if index.isValid():
+                source_index = self.proxy.mapToSource(index)
+                element = self.model.element(source_index)
+                if element is not None:
+                    elements.append(element)
+                elements.extend(self.visible_elements(parent=index))
+        return tuple(elements)
+
     def selected_elements(self) -> tuple:
         elements = []
         indexes = self.tree.selectionModel().selectedRows()

@@ -39,8 +39,8 @@ class NodeType:
 class Item(meta.Sortable):
     @dataclasses.dataclass
     class Path:
-        raw: str
-        expanded: str
+        raw: str = ''
+        expanded: str = ''
 
     @dataclasses.dataclass
     class Preview:
@@ -48,6 +48,7 @@ class Item(meta.Sortable):
         expanded: str = ''
         tooltip: str = ''
         html: str = ''
+        error: str = ''
 
     parm_name: str
     parm_type: ParmType

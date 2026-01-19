@@ -307,8 +307,13 @@ class ElementModel(QtGui.QStandardItemModel):
         if index.isValid():
             self.refresh_index(index)
 
-    def refresh_column(self, column: int, parent: QtCore.QModelIndex | None) -> None:
+    def refresh_column(
+        self, column: int, parent: QtCore.QModelIndex | None = None
+    ) -> None:
         """Refresh the DisplayRole of all items in the column."""
+
+        if parent is None:
+            parent = QtCore.QModelIndex()
 
         field = self._fields[column]
         for row in range(self.rowCount(parent)):

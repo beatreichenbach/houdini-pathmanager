@@ -28,11 +28,7 @@ class Plugin(ABC):
 
     def preview(self, items: Sequence[schema.Item], kwargs: dict) -> None: ...
 
-    def process(self, items: Sequence[schema.Item], kwargs: dict) -> None:
-        for item in items:
-            if item.preview:
-                item.path = item.preview.path
-                item.preview = schema.Item.Preview()
+    def process(self, items: Sequence[schema.Item], kwargs: dict) -> None: ...
 
     def form(self) -> ParameterForm | None:
         return None

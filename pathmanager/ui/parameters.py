@@ -1,5 +1,6 @@
 import logging
 
+from qt_parameters import ParameterWidget
 from qtpy import QtCore, QtWidgets
 
 from pathmanager.plugins import PluginManager
@@ -28,12 +29,12 @@ class ParametersWidget(QtWidgets.QWidget):
         plugins = PluginManager().get_plugins()
 
         self.form = ParameterForm('parameters')
+        self.form.parameter_changed.connect(self._parameter_changed)
 
         items = {plugin.label: plugin.name for plugin in plugins}
         parm = ComboParameter('plugin')
         parm.set_label('Mode')
         parm.set_items(items)
-        parm.value_changed.connect(self._plugin_changed)
         self.form.add_parameter(parm)
 
         self.forms = {}
@@ -52,13 +53,16 @@ class ParametersWidget(QtWidgets.QWidget):
         self.boxes[plugins[0].name].setVisible(True)
 
         parm = BoolParameter('use_forward_slashes')
+        parm.set_default(True)
         self.form.add_parameter(parm)
 
         layout.addWidget(self.form)
 
-    def _plugin_changed(self, plugin_name: str) -> None:
-        for name, box in self.boxes.items():
-            box.setVisible(name == plugin_name)
+    def _parameter_changed(self, parameter: ParameterWidget) -> None:
+        if parameter.name() == 'plugin':
+            plugin_name = parameter.value()
+            for name, box in self.boxes.items():
+                box.setVisible(name == plugin_name)
         self.parameter_changed.emit()
 
     def values(self) -> dict:
