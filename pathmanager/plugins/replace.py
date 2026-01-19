@@ -5,7 +5,7 @@ from collections.abc import Sequence
 
 from qt_parameters import BoolParameter, ParameterForm, StringParameter
 
-from pathmanager import schema
+from ..core import schema
 from . import base
 
 
@@ -22,6 +22,8 @@ class ReplacePlugin(base.Plugin):
 
     def preview(self, items: Sequence[schema.Item], kwargs: dict) -> None:
         options = Options(**kwargs)
+
+        use_forward_slashes = True
 
         # TODO: limit only if from is set.
 
@@ -41,17 +43,20 @@ class ReplacePlugin(base.Plugin):
             path = item.path
             try:
                 new_path = pattern.sub(replace, path)
-                new_path = new_path.replace('\\', '/').replace('//', '/')
             except re.error:
                 new_path = ''
 
+            if use_forward_slashes:
+                new_path = new_path.replace('\\', '/').replace('//', '/')
+
             if new_path == path:
                 new_path = ''
+
             # item.preview = self._get_html(path, new_path)
             item.preview = new_path
 
     def form(self) -> ParameterForm | None:
-        form = ParameterForm()
+        form = ParameterForm('replace')
 
         parm = StringParameter('search')
         parm.set_label('From')

@@ -1,15 +1,11 @@
 import logging
 
 import hou
+
 from qt_parameters import CollapsibleBox, EnumParameter, PathParameter
 from qtpy import QtCore, QtGui, QtWidgets
 
-from . import base
-
 logger = logging.getLogger(__name__)
-
-
-class HoudiniHost(base.Host): ...
 
 
 class HoudiniPathParameter(PathParameter):

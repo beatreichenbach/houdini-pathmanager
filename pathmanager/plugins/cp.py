@@ -3,7 +3,8 @@ import os
 import shutil
 from collections.abc import Sequence
 
-from pathmanager import schema, utils
+from pathmanager import utils
+from ..core import schema
 from pathmanager.qt_parameters import ParameterForm, PathParameter
 from . import base
 
@@ -73,7 +74,7 @@ class CopyPlugin(base.Plugin):
             item.preview = ''
 
     def form(self) -> ParameterForm | None:
-        form = ParameterForm()
+        form = ParameterForm('copy')
 
         parm = PathParameter('destination')
         parm.set_method(PathParameter.Method.EXISTING_DIR)

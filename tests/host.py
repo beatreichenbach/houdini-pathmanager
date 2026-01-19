@@ -1,22 +1,70 @@
 import shutil
 
 import tests
-from pathmanager.hosts.base import Host
-from pathmanager.schema import Item
+from pathmanager.core import Host
+from pathmanager.core.schema import Item, NodeType, ParmTypes, Statuses
 
 import os
-import tempfile
 
 
 class TestHost(Host):
-    def get_items(self) -> tuple[Item, ...]:
+    def __init__(self):
+        super().__init__()
+
+        self._generate_data()
+
+    def get_items(self, selected: bool = False) -> tuple[Item, ...]:
         current_dir = os.path.dirname(os.path.abspath(__file__))
 
         source_dir = os.path.join(current_dir, 'data', 'source')
         os.makedirs(source_dir, exist_ok=True)
 
         items = []
+
+        # Expression
+        node_type = NodeType(name='image', category='sop')
+        for i in range(2):
+            path = Item.Path(
+                raw='$HIP/geo/cube/v1/`$OS`.$F4.bgeo.sc',
+                expanded='/home/beat/geo/cube/v1/`$OS`.$F4.bgeo.sc',
+            )
+            item = Item(
+                parm_name=f'file',
+                parm_type=ParmTypes.FILE,
+                node_path=f'/stage/geo_{i}',
+                node_type=node_type,
+                path=path,
+                status=Statuses.EXPRESSION,
+            )
+            items.append(item)
+
+        # Geometry
+        node_type = NodeType(name='image', category='sop')
+        for i in range(2):
+            item = Item(
+                parm_name=f'file',
+                parm_type=ParmTypes.GEOMETRY,
+                node_path=f'/stage/geo_{i}',
+                node_type=node_type,
+                path=Item.Path(raw='$HIP/geo/cube/v1/cube.$F4.bgeo.sc', expanded=''),
+                status=Statuses.STACK,
+            )
+            items.append(item)
+
+            item = Item(
+                parm_name=f'file',
+                parm_type=ParmTypes.GEOMETRY,
+                node_path=f'/stage/geo_{i}',
+                node_type=node_type,
+                path=Item.Path(raw='$HIP/geo/cube/v2/cube.$F4.bgeo.sc', expanded=''),
+                status=Statuses.MISSING,
+            )
+            items.append(item)
+
         # Textures
+
+        node_type = NodeType(name='image', category='sop')
+
         for i in range(4):
             for j in range(3):
                 path = os.path.join(source_dir, f'texture_{i:03d}.png')
@@ -24,11 +72,12 @@ class TestHost(Host):
                 status = os.path.isfile(path)
 
                 item = Item(
-                    name=f'file_{i}',
-                    parm_type='image',
+                    parm_name=f'file_{i}',
+                    parm_type=ParmTypes.IMAGE,
                     node_path=f'/stage/image_{j}',
-                    status=f'{status}',
-                    path=path,
+                    node_type=node_type,
+                    path=Item.Path(raw=path, expanded=''),
+                    status=Statuses.FOUND,
                 )
                 items.append(item)
 
@@ -37,11 +86,12 @@ class TestHost(Host):
         status = os.path.isfile(path)
 
         item = Item(
-            name=f'file',
-            parm_type='image',
+            parm_name=f'file',
+            parm_type=ParmTypes.IMAGE,
             node_path='/stage/image',
-            status=f'{status}',
-            path=path,
+            node_type=node_type,
+            path=Item.Path(raw=path, expanded=''),
+            status=Statuses.STACK,
         )
         items.append(item)
 
@@ -50,11 +100,12 @@ class TestHost(Host):
         status = os.path.isfile(path)
 
         item = Item(
-            name=f'file',
-            parm_type='image',
+            parm_name=f'file',
+            parm_type=ParmTypes.IMAGE,
             node_path='/stage/image',
-            status=f'{status}',
-            path=path,
+            node_type=node_type,
+            path=Item.Path(raw=path, expanded=''),
+            status=Statuses.STACK,
         )
         items.append(item)
         items.append(item)
@@ -102,4 +153,3 @@ class TestHost(Host):
 if __name__ == '__main__':
     tests.init()
     host = TestHost()
-    host._generate_data()

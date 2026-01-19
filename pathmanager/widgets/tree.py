@@ -307,6 +307,20 @@ class ElementModel(QtGui.QStandardItemModel):
         if index.isValid():
             self.refresh_index(index)
 
+    def refresh_column(self, column: int, parent: QtCore.QModelIndex | None) -> None:
+        """Refresh the DisplayRole of all items in the column."""
+
+        field = self._fields[column]
+        for row in range(self.rowCount(parent)):
+            index = self.index(row, column, parent)
+            if not index.isValid():
+                continue
+            element = self.element(index)
+            if element:
+                value = get_value(element, field.name)
+                field.refresh(value, index)
+            self.refresh_column(column, parent=index)
+
     def refresh_header(self) -> None:
         labels = [field.label for field in self._fields]
         self.setHorizontalHeaderLabels(labels)

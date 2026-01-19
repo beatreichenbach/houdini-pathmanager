@@ -4,11 +4,11 @@ import logging
 from abc import ABC
 from typing import Sequence
 
-from PySide6.QtTest import QTest
 from qt_parameters import ParameterForm
 from qtpy import QtGui, QtWidgets
 
-from pathmanager import schema, utils
+from pathmanager import utils
+from pathmanager.core import schema
 
 
 class Plugin(ABC):

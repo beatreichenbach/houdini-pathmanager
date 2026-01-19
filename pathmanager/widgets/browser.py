@@ -458,6 +458,18 @@ class Browser(QtWidgets.QWidget):
             return
         self.selection_changed.emit(element)
 
+    def get_visible_elements(self, parent: QtCore.QModelIndex = None) -> tuple:
+        elements = []
+        for row in range(self.proxy.rowCount(parent)):
+            if self.proxy.filterAcceptsRow(row, parent):
+                index = self.proxy.index(row, 0, parent)
+                if index.isValid():
+                    data = index.data(ItemDataRole.UserRole)
+                    if data is not None:
+                        elements.append(data)
+                    elements.extend(self.get_visible_elements(index))
+        return tuple(elements)
+
 
 @dataclasses.dataclass
 class FilterBrowserState(BrowserState):

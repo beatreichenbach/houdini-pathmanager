@@ -65,3 +65,16 @@ See the [License file](LICENSE) for details.
   - copy path
   - go to node
 
+
+
+## Notes
+
+- Get stacks for cp, mv
+- Only expression actions: replace, relative
+
+view:
+highlight changes
+
+validate:
+- root directory
+- 
