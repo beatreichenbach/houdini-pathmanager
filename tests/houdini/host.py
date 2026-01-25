@@ -1,21 +1,20 @@
+import os
 import shutil
 from typing import Sequence
 
 import tests
-from pathmanager.core import Host, schema
+from pathmanager.core import schema
 from pathmanager.core.schema import Item, NodeType, ParmTypes, Statuses
 
-import os
 
-
-class TestHost(Host):
+class HoudiniHost:
     def __init__(self):
         super().__init__()
 
         self._generate_data()
 
     def get_items(self, selected: bool = False) -> tuple[Item, ...]:
-        current_dir = os.path.dirname(os.path.abspath(__file__))
+        current_dir = os.path.dirname(os.path.abspath(tests.__file__))
 
         source_dir = os.path.join(current_dir, 'data', 'source')
         os.makedirs(source_dir, exist_ok=True)
@@ -48,7 +47,7 @@ class TestHost(Host):
                 node_path=f'/stage/geo_{i}',
                 node_type=node_type,
                 path=Item.Path(raw='$HIP/geo/cube/v1/cube.$F4.bgeo.sc'),
-                status=Statuses.STACK,
+                status=Statuses.MISSING,
             )
             items.append(item)
 
@@ -92,7 +91,7 @@ class TestHost(Host):
             node_path='/stage/image',
             node_type=node_type,
             path=Item.Path(raw=path),
-            status=Statuses.STACK,
+            status=Statuses.MISSING,
         )
         items.append(item)
 
@@ -106,7 +105,7 @@ class TestHost(Host):
             node_path='/stage/image',
             node_type=node_type,
             path=Item.Path(raw=path),
-            status=Statuses.STACK,
+            status=Statuses.MISSING,
         )
         items.append(item)
         items.append(item)
@@ -124,7 +123,7 @@ class TestHost(Host):
         Generate test data to test support for UDIMs, file sequences, and .tx files.
         """
 
-        current_dir = os.path.dirname(os.path.abspath(__file__))
+        current_dir = os.path.dirname(os.path.abspath(tests.__file__))
 
         source_dir = os.path.join(current_dir, 'data', 'source')
         os.makedirs(source_dir, exist_ok=True)
@@ -151,11 +150,17 @@ class TestHost(Host):
             path = os.path.join(source_dir, f'sequence.{i:04d}.png')
             paths.append(path)
 
+        # Geo sequence
+        for i in range(1, 24):
+            path = os.path.join(source_dir, f'cube.{i:04d}.bgeo.sc')
+            paths.append(path)
+
         for path in paths:
             with open(path, 'w') as f:
                 f.write('')
 
-
-if __name__ == '__main__':
-    tests.init()
-    host = TestHost()
+    @staticmethod
+    def expand_string(text: str, preserve_frame: bool = False) -> str:
+        text = text.replace('$HIP', '/projects/test/houdini')
+        text = text.replace('$JOB', '/projects/test')
+        return text

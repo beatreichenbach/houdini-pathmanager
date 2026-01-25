@@ -1,7 +1,9 @@
+import os
 from collections.abc import Sequence
 
 from pathmanager.core import schema
-from pathmanager.qt_parameters import ParameterForm, PathParameter
+from pathmanager.houdini import HoudiniHost, PathParameter
+from qt_parameters import ParameterForm
 from . import base
 
 
@@ -9,23 +11,27 @@ class CopyPlugin(base.Plugin):
     name = 'copy'
 
     def preview(self, items: Sequence[schema.Item], kwargs: dict) -> None:
-        ...
-        # if not options.destination:
-        #     return
-        #
-        # for item in items:
-        #     path = item.path
-        #     if options.relative_root_enabled:
-        #         relative_path = os.path.relpath(path, options.relative_root)
-        #     else:
-        #         relative_path = os.path.basename(path)
-        #     new_path = os.path.join(options.destination, relative_path)
-        #
-        #     new_path = new_path.replace('\\', '/').replace('//', '/')
-        #
-        #     if new_path == path:
-        #         new_path = ''
-        #     item.preview = new_path
+        values = kwargs.get('find', {})
+        destination = values.get('destination', '')
+        relative_root = values.get('relative_root', '')
+        relative_root_enabled = values.get('relative_root_enabled', False)
+
+        if not destination:
+            return
+
+        for item in items:
+            if item.status == schema.Statuses.EXPRESSION:
+                continue
+
+            path = item.path.raw
+            absolute_path = HoudiniHost.expand_string(path, preserve_frame=True)
+            if relative_root_enabled:
+                relative_path = os.path.relpath(absolute_path, relative_root)
+            else:
+                relative_path = os.path.basename(absolute_path)
+
+            new_path = os.path.join(destination, relative_path)
+            item.set_preview(new_path)
 
     def process(self, items: Sequence[schema.Item], kwargs: dict) -> None:
         ...

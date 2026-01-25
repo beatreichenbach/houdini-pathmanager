@@ -2,7 +2,8 @@ import fnmatch
 import re
 from collections.abc import Sequence
 
-from qt_parameters import BoolParameter, ParameterForm, StringParameter
+from qt_material_icons import MaterialIcon
+from qt_parameters import BoolParameter, Label, ParameterForm, StringParameter
 
 from pathmanager.core import schema
 from . import base
@@ -17,7 +18,6 @@ class ReplacePlugin(base.Plugin):
         replace = plugin_values.get('replace', '')
         regex = plugin_values.get('regex', False)
         match_case = plugin_values.get('match_case', False)
-        use_forward_slashes = kwargs.get('use_forward_slashes', False)
 
         if not search:
             return
@@ -34,42 +34,52 @@ class ReplacePlugin(base.Plugin):
                 # Escape special characters
                 replace = replace.encode('unicode_escape').decode('ascii')
         except re.error:
-            for item in items:
-                item.preview.error = 'Error in search pattern'
             return
 
         for item in items:
-            path = item.path.raw
-            preview = schema.Item.Preview()
-
             try:
-                preview.raw = pattern.sub(replace, path)
+                path = pattern.sub(replace, item.path.raw)
             except re.error:
-                preview.error = 'Regex error'
-
-            if use_forward_slashes:
-                preview.raw = preview.raw.replace('\\', '/').replace('//', '/')
-
-            if preview.raw == path:
-                preview.raw = ''
-
-            item.preview = preview
+                continue
+            item.set_preview(path)
 
     def form(self) -> ParameterForm | None:
         form = ParameterForm('replace')
 
-        parm = StringParameter('search')
-        parm.set_label('From')
-        form.add_parameter(parm)
+        search_parm = StringParameter('search')
+        search_parm.set_label('From')
+        form.add_parameter(search_parm)
 
-        parm = StringParameter('replace')
-        parm.set_label('To')
-        form.add_parameter(parm)
+        replace_parm = StringParameter('replace')
+        replace_parm.set_label('To')
+        form.add_parameter(replace_parm)
 
-        parm = BoolParameter('regex')
-        form.add_parameter(parm)
+        regex_parm = BoolParameter('regex')
+        form.add_parameter(regex_parm)
 
         parm = BoolParameter('match_case')
         form.add_parameter(parm)
+
+        label = Label()
+        label.set_icon(MaterialIcon('error'))
+        label.setVisible(False)
+        form.add_widget(label, column=2)
+
+        def _parameter_changed() -> None:
+            label.setVisible(False)
+
+            search = search_parm.value()
+            replace = replace_parm.value()
+            regex = regex_parm.value()
+
+            if regex:
+                try:
+                    pattern = re.compile(search)
+                    pattern.sub(replace, '')
+                except re.error as e:
+                    label.set_text(f'Regex Error: {e.msg}')
+                    label.setVisible(True)
+
+        form.parameter_changed.connect(_parameter_changed)
 
         return form

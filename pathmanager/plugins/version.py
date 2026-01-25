@@ -3,7 +3,7 @@ from collections.abc import Sequence
 from qt_parameters import ComboParameter, IntParameter, StringParameter
 
 from pathmanager.core import schema
-from pathmanager.qt_parameters import ParameterForm
+from qt_parameters import ParameterForm
 from . import base
 
 

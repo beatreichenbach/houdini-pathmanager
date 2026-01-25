@@ -2,7 +2,7 @@ import logging
 
 import hou
 
-from qt_parameters import CollapsibleBox, EnumParameter, PathParameter
+from qt_parameters import CollapsibleBox, ComboParameter, EnumParameter, PathParameter
 from qtpy import QtCore, QtGui, QtWidgets
 
 from pathmanager.widgets import Browser
@@ -50,6 +50,18 @@ class HoudiniPathParameter(PathParameter):
     def _file_selected(self, value: str) -> None:
         if value:
             self.set_value(value)
+
+
+class HoudiniComboParameter(ComboParameter):
+    def _init_ui(self) -> None:
+        self.combo = hou.qt.ComboBox()
+        self.combo.currentIndexChanged.connect(self._current_index_changed)
+        self.combo.setSizePolicy(
+            QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Fixed
+        )
+
+        self._layout.addWidget(self.combo)
+        self.setFocusProxy(self.combo)
 
 
 class HoudiniEnumParameter(EnumParameter):
@@ -105,15 +117,3 @@ def patch_collapsible_box() -> None:
     CollapsibleBox.paintEvent = paint_event
     CollapsibleBox.__patched__ = True
     logger.debug(f'Patched {CollapsibleBox.__name__}')
-
-
-def patch_browser() -> None:
-    app = QtWidgets.QApplication.instance()
-    palette = QtWidgets.QApplication.palette()
-    # QAbstractItemView alternating row color fix
-    palette.setColor(
-        QtGui.QPalette.ColorRole.AlternateBase,
-        palette.color(QtGui.QPalette.ColorRole.Window),
-    )
-    if isinstance(app, QtWidgets.QApplication):
-        app.setPalette(palette, 'QAbstractItemView')

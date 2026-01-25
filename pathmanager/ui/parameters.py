@@ -4,7 +4,7 @@ from qt_parameters import ParameterWidget
 from qtpy import QtCore, QtWidgets
 
 from pathmanager.plugins import PluginManager
-from pathmanager.qt_parameters import (
+from qt_parameters import (
     BoolParameter,
     CollapsibleBox,
     ComboParameter,
@@ -52,10 +52,6 @@ class ParametersWidget(QtWidgets.QWidget):
 
         self.boxes[plugins[0].name].setVisible(True)
 
-        parm = BoolParameter('use_forward_slashes')
-        parm.set_default(True)
-        self.form.add_parameter(parm)
-
         layout.addWidget(self.form)
 
     def _parameter_changed(self, parameter: ParameterWidget) -> None:
@@ -68,3 +64,6 @@ class ParametersWidget(QtWidgets.QWidget):
     def values(self) -> dict:
         values = self.form.values()
         return values
+
+    def set_values(self, values: dict) -> None:
+        self.form.set_values(values)

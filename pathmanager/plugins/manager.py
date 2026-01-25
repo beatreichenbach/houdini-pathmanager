@@ -1,4 +1,4 @@
-from . import base, cp, find, mv, relative, replace, version
+from . import base, cp, find, mv, relative, replace, set_directory, version
 
 
 class PluginManager:
@@ -7,11 +7,13 @@ class PluginManager:
     def __new__(cls, *args, **kwargs):
         if cls._instance is None:
             cls._instance = super().__new__(cls)
+            cls._instance._init()
         return cls._instance
 
-    def __init__(self) -> None:
+    def _init(self) -> None:
         plugins = (
             replace.ReplacePlugin(),
+            set_directory.SetDirectoryPlugin(),
             cp.CopyPlugin(),
             mv.MovePlugin(),
             find.FindPlugin(),

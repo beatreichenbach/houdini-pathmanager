@@ -5,21 +5,24 @@ from collections.abc import Sequence
 
 import hou
 
-from pathmanager.core import base, schema
+from pathmanager.core import schema
 from . import widgets
 
 logger = logging.getLogger(__name__)
 
 
-class HoudiniHost(base.Host):
+class HoudiniHost:
     def __init__(self) -> None:
         widgets.patch_collapsible_box()
-        # widgets.patch_browser()
 
     def get_items(self, selected: bool = False) -> tuple[schema.Item, ...]:
         items = []
 
-        nodes = hou.node('/').allSubChildren(recurse_in_locked_nodes=False)
+        if selected:
+            nodes = hou.selectedNodes()
+        else:
+            nodes = hou.node('/').allSubChildren(recurse_in_locked_nodes=False)
+
         for node in nodes:
             for parm in node.parms():
                 template = parm.parmTemplate()
@@ -58,8 +61,8 @@ class HoudiniHost(base.Host):
 
         if '`' in raw:
             status = schema.Statuses.EXPRESSION
-        elif re.search(r'\$F{?\d*|<UDIM>', raw):
-            status = schema.Statuses.STACK
+        # elif re.search(r'\$F{?\d*|<UDIM>', raw):
+        #     status = schema.Statuses.STACK
         elif os.path.exists(expanded):
             status = schema.Statuses.FOUND
         else:
@@ -77,12 +80,24 @@ class HoudiniHost(base.Host):
 
     @staticmethod
     def _get_parm_type(file_type: hou.fileType) -> schema.ParmType | None:
-        if file_type == hou.fileType.Any:
-            return schema.ParmTypes.FILE
-        if file_type == hou.fileType.Geometry:
-            return schema.ParmTypes.GEOMETRY
-        if file_type == hou.fileType.Image:
-            return schema.ParmTypes.IMAGE
-        if file_type == hou.fileType.Directory:
-            return schema.ParmTypes.DIRECTORY
-        return None
+        parm_types = {
+            hou.fileType.Any: schema.ParmTypes.FILE,
+            hou.fileType.Geometry: schema.ParmTypes.GEOMETRY,
+            hou.fileType.Image: schema.ParmTypes.IMAGE,
+            hou.fileType.Directory: schema.ParmTypes.DIRECTORY,
+        }
+        return parm_types.get(file_type)
+
+        glob_pattern = re.sub(r'<UDIM>|\$F{?\d*}?', '*', self.raw)
+        glob_pattern = hou.text.expandString(glob_pattern)
+
+        version_pattern = r'_v(\d+)'
+        glob_version = re.sub(version_pattern, '_v*', self.raw)
+
+    @staticmethod
+    def expand_string(text: str, preserve_frame: bool = False) -> str:
+        if preserve_frame:
+            safe = re.sub(r'\$F', r'<F>', text)
+            return hou.text.expandString(safe).replace('<F>', '$F')
+        else:
+            return hou.text.expandString(text)

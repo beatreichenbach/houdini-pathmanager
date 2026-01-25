@@ -5,10 +5,10 @@ from typing import Any
 
 from qtpy import QtCore, QtGui, QtWidgets
 
-from pathmanager import meta
-from pathmanager.qt_parameters import ComboParameter, IntParameter
-from pathmanager.widgets.filter import FilterState, MultiFilterWidget
-from pathmanager.widgets.tree import StyledItemDelegate
+from . import meta
+from .houdini import ComboParameter
+from .widgets.filter import FilterState, MultiFilterWidget
+from .widgets.tree import StyledItemDelegate
 
 
 class StyledDelegate(StyledItemDelegate):

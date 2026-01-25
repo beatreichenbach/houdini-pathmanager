@@ -1,9 +1,11 @@
+import dataclasses
 import logging
 from functools import partial
 
-from qtpy import QtCore, QtWidgets
+from qtpy import QtCore, QtGui, QtWidgets
 
-from pathmanager.core import Host
+from pathmanager.core import schema
+from pathmanager.core.storage import Storage
 from pathmanager.plugins import PluginManager
 from pathmanager.tree import StyledDelegate, StyledFilterWidget
 from pathmanager.widgets import (
@@ -11,11 +13,14 @@ from pathmanager.widgets import (
     CheckBoxButton,
     Field,
     FilterBrowser,
+    FilterBrowserState,
+    FilterState,
     Group,
     Stack,
 )
 from .parameters import ParametersWidget
 from .tree import PathField, PreviewField
+from pathmanager.houdini import HoudiniHost
 
 logger = logging.getLogger(__name__)
 
@@ -24,10 +29,12 @@ class PathManager(QtWidgets.QWidget):
     def __init__(self, parent: QtWidgets.QWidget | None = None) -> None:
         super().__init__(parent)
 
-        self._host: Host | None = None
+        self._host = HoudiniHost()
         self._items = None
 
         self._init_ui()
+        self._load_preferences()
+        self._load_items()
 
     def _init_ui(self) -> None:
         self.resize(QtCore.QSize(1280, 720))
@@ -50,21 +57,25 @@ class PathManager(QtWidgets.QWidget):
             field=Field('parm_type'),
             filter_widget=StyledFilterWidget('Parm Type'),
             delegate=StyledDelegate(),
+            visible=False,
         )
 
         self.browser.add_column(
             field=Field('node_path'),
             filter_widget=BasicFilterWidget('Node Path', cls=str),
+            visible=False,
         )
 
         self.browser.add_column(
             field=Field('node_type.category', label='Node Category'),
             filter_widget=BasicFilterWidget('Node Type Category', cls=str),
+            visible=False,
         )
 
         self.browser.add_column(
             field=Field('node_type.name', label='Node Type'),
             filter_widget=BasicFilterWidget('Node Type Name', cls=str),
+            visible=False,
         )
 
         self.browser.add_column(
@@ -127,10 +138,6 @@ class PathManager(QtWidgets.QWidget):
         # Global
         layout.setStretch(0, 1)
 
-    def set_host(self, host: Host) -> None:
-        self._host = host
-        self._load_items()
-
     def reload(self) -> None:
         self._load_items()
 
@@ -140,8 +147,6 @@ class PathManager(QtWidgets.QWidget):
 
     def _load_items(self) -> None:
         self.browser.clear()
-        if not self._host:
-            return
 
         selected = self.selection_button.isChecked()
         items = self._host.get_items(selected=selected)
@@ -158,6 +163,8 @@ class PathManager(QtWidgets.QWidget):
         plugin = PluginManager().get(plugin_name)
 
         items = self.browser.elements()
+        for item in items:
+            item.preview = schema.Item.Preview()
         plugin.preview(items, values)
         self._refresh_items()
 
@@ -174,3 +181,29 @@ class PathManager(QtWidgets.QWidget):
         plugin.process(items, values)
         self._host.update_items(items)
         self._load_items()
+
+    def closeEvent(self, event: QtGui.QCloseEvent) -> None:
+        self._save_preferences()
+        super().closeEvent(event)
+
+    def _save_preferences(self) -> None:
+        values = self.parameters_widget.values()
+        browser_state = self.browser.state()
+        browser_data = dataclasses.asdict(browser_state)
+        state = {
+            'browser': browser_data,
+            # 'parameters': values,
+        }
+        Storage().set_state(state)
+
+    def _load_preferences(self) -> None:
+        state = Storage().get_state()
+
+        browser_data = state.get('browser', {})
+        filters_data = browser_data.get('filters', {})
+        browser_data['filters'] = {k: FilterState(**v) for k, v in filters_data.items()}
+        browser_state = FilterBrowserState(**browser_data)
+        self.browser.set_state(browser_state)
+
+        # parameters_state = state.get('parameters', {})
+        # self.parameters_widget.set_values(parameters_state)

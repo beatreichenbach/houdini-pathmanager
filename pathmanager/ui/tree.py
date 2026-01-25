@@ -17,7 +17,7 @@ class PathField(Field):
         item.setToolTip(tooltip)
         return item
 
-    def refresh(self, value: schema.Item.Preview, index: QtCore.QModelIndex) -> None:
+    def refresh(self, value: schema.Item.Path, index: QtCore.QModelIndex) -> None:
         text = value.raw if value is not None else ''
         tooltip = value.expanded if value is not None else ''
         super().refresh(text, index)
@@ -25,34 +25,14 @@ class PathField(Field):
 
 
 class PreviewField(Field):
-    def __post_init__(self) -> None:
-        super().__post_init__()
-        self._error_icon = MaterialIcon('error')
-
     def create_item(self, value: schema.Item.Preview) -> QtGui.QStandardItem:
         text = value.raw if value is not None else ''
-        error = value.error if value is not None else ''
-
         item = super().create_item(text)
-        if error:
-            item.setIcon(self._error_icon)
-            item.setText(error)
         return item
 
     def refresh(self, value: schema.Item.Preview, index: QtCore.QModelIndex) -> None:
         text = value.raw if value is not None else ''
-        error = value.error if value is not None else ''
-
         super().refresh(text, index)
-
-        model = index.model()
-        if isinstance(model, QtGui.QStandardItemModel):
-            item = model.itemFromIndex(index)
-            if error:
-                item.setIcon(self._error_icon)
-                item.setText(error)
-            else:
-                item.setIcon(QtGui.QIcon())
 
 
 class HighlightDelegate(StyledItemDelegate):

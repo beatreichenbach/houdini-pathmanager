@@ -1,18 +1,19 @@
 from __future__ import annotations
 
 import tests
+import sys
+from tests import houdini
+
+sys.modules['pathmanager.houdini'] = houdini
+
 from pathmanager.ui.manager import PathManager
 from pathmanager.ui.parameters import ParametersWidget
 from tests import application
-from tests.host import TestHost
 
 
 def test_manager() -> None:
     with application():
-        host = TestHost()
         manager = PathManager()
-        manager.set_host(host)
-
         manager.show()
 
 
