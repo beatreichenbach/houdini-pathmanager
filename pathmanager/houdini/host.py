@@ -1,11 +1,11 @@
+import glob
 import logging
-import os.path
 import re
 from collections.abc import Sequence
 
 import hou
 
-from pathmanager.core import schema
+from .. import schema
 from . import widgets
 
 logger = logging.getLogger(__name__)
@@ -61,12 +61,12 @@ class HoudiniHost:
 
         if '`' in raw:
             status = schema.Statuses.EXPRESSION
-        # elif re.search(r'\$F{?\d*|<UDIM>', raw):
-        #     status = schema.Statuses.STACK
-        elif os.path.exists(expanded):
-            status = schema.Statuses.FOUND
         else:
-            status = schema.Statuses.MISSING
+            files = HoudiniHost.expand_files(raw)
+            if files:
+                status = schema.Statuses.FOUND
+            else:
+                status = schema.Statuses.MISSING
 
         item = schema.Item(
             parm_name=parm.name(),
@@ -88,16 +88,17 @@ class HoudiniHost:
         }
         return parm_types.get(file_type)
 
-        glob_pattern = re.sub(r'<UDIM>|\$F{?\d*}?', '*', self.raw)
-        glob_pattern = hou.text.expandString(glob_pattern)
-
-        version_pattern = r'_v(\d+)'
-        glob_version = re.sub(version_pattern, '_v*', self.raw)
-
     @staticmethod
-    def expand_string(text: str, preserve_frame: bool = False) -> str:
-        if preserve_frame:
+    def expand_string(text: str, expand_frame: bool = False) -> str:
+        if expand_frame:
+            return hou.text.expandString(text)
+        else:
             safe = re.sub(r'\$F', r'<F>', text)
             return hou.text.expandString(safe).replace('<F>', '$F')
-        else:
-            return hou.text.expandString(text)
+
+    @staticmethod
+    def expand_files(path: str) -> tuple[str, ...]:
+        absolute_path = HoudiniHost.expand_string(path)
+        glob_pattern = re.sub(r'\$F{?\d*}?|<UDIM>', '*', absolute_path)
+        files = glob.glob(glob_pattern)
+        return tuple(sorted(files))

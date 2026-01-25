@@ -1,7 +1,7 @@
 import os
 from collections.abc import Sequence
 
-from pathmanager.core import schema
+from .. import schema
 from pathmanager.houdini import PathParameter
 from qt_parameters import ParameterForm
 from . import base
@@ -27,7 +27,7 @@ class SetDirectoryPlugin(base.Plugin):
     def form(self) -> ParameterForm | None:
         form = ParameterForm(self.name)
 
-        parm = PathParameter('directory')
+        parm = PathParameter(self.name)
         parm.set_method(PathParameter.Method.EXISTING_DIR)
         form.add_parameter(parm)
 

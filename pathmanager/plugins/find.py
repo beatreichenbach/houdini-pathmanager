@@ -4,8 +4,8 @@ import re
 from collections import defaultdict
 from collections.abc import Sequence
 
-from pathmanager.core import schema
-from pathmanager.houdini import HoudiniHost, PathParameter
+from .. import schema
+from pathmanager.houdini import PathParameter
 from qt_parameters import ParameterForm
 from . import base
 
@@ -34,7 +34,6 @@ class FindPlugin(base.Plugin):
             return
 
         # Find missing files
-        search_root = HoudiniHost.expand_string(search_root)
         for root, dirs, files in os.walk(search_root):
             for file, items in tuple(missing_items.items()):
                 if fnmatch.filter(files, file):
@@ -51,7 +50,6 @@ class FindPlugin(base.Plugin):
 
         parm = PathParameter('root')
         parm.set_method(PathParameter.Method.EXISTING_DIR)
-        parm.set_default('$HIP')
         form.add_parameter(parm)
 
         return form

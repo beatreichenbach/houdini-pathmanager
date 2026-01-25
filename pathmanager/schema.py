@@ -7,8 +7,8 @@ from qtpy import QtGui
 
 from pathmanager import meta
 
-GREEN = QtGui.QColor('green')
-RED = QtGui.QColor('red')
+GREEN = QtGui.QColor('#66BB6A')
+RED = QtGui.QColor('#E53935')
 
 
 class Status(meta.StyledItem): ...

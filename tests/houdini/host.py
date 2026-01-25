@@ -1,10 +1,22 @@
+import dataclasses
+import glob
 import os
+import re
 import shutil
 from typing import Sequence
 
 import tests
-from pathmanager.core import schema
-from pathmanager.core.schema import Item, NodeType, ParmTypes, Statuses
+from pathmanager import schema
+from pathmanager.schema import Item, NodeType, ParmTypes, Statuses
+
+
+nodes = []
+
+
+@dataclasses.dataclass
+class Node:
+    path: str
+    node_path: str
 
 
 class HoudiniHost:
@@ -14,108 +26,38 @@ class HoudiniHost:
         self._generate_data()
 
     def get_items(self, selected: bool = False) -> tuple[Item, ...]:
-        current_dir = os.path.dirname(os.path.abspath(tests.__file__))
-
-        source_dir = os.path.join(current_dir, 'data', 'source')
-        os.makedirs(source_dir, exist_ok=True)
-
         items = []
-
-        # Expression
-        node_type = NodeType(name='image', category='sop')
-        for i in range(2):
-            path = Item.Path(
-                raw='$HIP/geo/cube/v1/`$OS`.$F4.bgeo.sc',
-                expanded='/home/beat/geo/cube/v1/`$OS`.$F4.bgeo.sc',
-            )
-            item = Item(
-                parm_name=f'file',
-                parm_type=ParmTypes.FILE,
-                node_path=f'/stage/geo_{i}',
-                node_type=node_type,
-                path=path,
-                status=Statuses.EXPRESSION,
-            )
-            items.append(item)
-
-        # Geometry
-        node_type = NodeType(name='image', category='sop')
-        for i in range(2):
-            item = Item(
-                parm_name=f'file',
-                parm_type=ParmTypes.GEOMETRY,
-                node_path=f'/stage/geo_{i}',
-                node_type=node_type,
-                path=Item.Path(raw='$HIP/geo/cube/v1/cube.$F4.bgeo.sc'),
-                status=Statuses.MISSING,
-            )
-            items.append(item)
+        for node in nodes:
+            if '`' in node.path:
+                status = Statuses.EXPRESSION
+            else:
+                files = HoudiniHost.expand_files(node.path)
+                if files:
+                    status = Statuses.FOUND
+                else:
+                    status = Statuses.MISSING
 
             item = Item(
-                parm_name=f'file',
-                parm_type=ParmTypes.GEOMETRY,
-                node_path=f'/stage/geo_{i}',
-                node_type=node_type,
-                path=Item.Path(raw='$HIP/geo/cube/v2/cube.$F4.bgeo.sc'),
-                status=Statuses.MISSING,
+                parm_name='file',
+                parm_type=ParmTypes.IMAGE,
+                node_path=node.node_path,
+                node_type=NodeType('image', 'sop'),
+                path=Item.Path(raw=node.path),
+                status=status,
             )
             items.append(item)
-
-        # Textures
-
-        node_type = NodeType(name='image', category='sop')
-
-        for i in range(4):
-            for j in range(3):
-                path = os.path.join(source_dir, f'texture_{i:03d}.png')
-
-                status = os.path.isfile(path)
-
-                item = Item(
-                    parm_name=f'file_{i}',
-                    parm_type=ParmTypes.IMAGE,
-                    node_path=f'/stage/image_{j}',
-                    node_type=node_type,
-                    path=Item.Path(raw=path),
-                    status=Statuses.FOUND,
-                )
-                items.append(item)
-
-        # UDIM
-        path = os.path.join(source_dir, f'texture.<UDIM>.png')
-        status = os.path.isfile(path)
-
-        item = Item(
-            parm_name=f'file',
-            parm_type=ParmTypes.IMAGE,
-            node_path='/stage/image',
-            node_type=node_type,
-            path=Item.Path(raw=path),
-            status=Statuses.MISSING,
-        )
-        items.append(item)
-
-        # File sequence
-        path = os.path.join(source_dir, f'sequence.$F4.png')
-        status = os.path.isfile(path)
-
-        item = Item(
-            parm_name=f'file',
-            parm_type=ParmTypes.IMAGE,
-            node_path='/stage/image',
-            node_type=node_type,
-            path=Item.Path(raw=path),
-            status=Statuses.MISSING,
-        )
-        items.append(item)
-        items.append(item)
-
         return tuple(items)
 
     def update_items(self, items: Sequence[schema.Item]) -> None:
+        nodes_data = {node.node_path: node for node in nodes}
         for item in items:
-            item.path = schema.Item.Path(raw=item.preview.raw)
-            item.preview = schema.Item.Preview()
+            if item.preview.raw:
+                node = nodes_data[item.node_path]
+                node.path = item.preview.raw
+                print(item.preview.raw)
+        print('--')
+        for node in nodes:
+            print(node.path)
 
     @staticmethod
     def _generate_data() -> None:
@@ -123,12 +65,10 @@ class HoudiniHost:
         Generate test data to test support for UDIMs, file sequences, and .tx files.
         """
 
-        current_dir = os.path.dirname(os.path.abspath(tests.__file__))
+        tests_dir = os.path.dirname(os.path.abspath(tests.__file__))
 
-        source_dir = os.path.join(current_dir, 'data', 'source')
-        os.makedirs(source_dir, exist_ok=True)
-
-        destination_dir = os.path.join(current_dir, 'data', 'destination')
+        source_dir = os.path.join(tests_dir, 'data', 'source')
+        destination_dir = os.path.join(tests_dir, 'data', 'destination')
         shutil.rmtree(destination_dir)
         os.makedirs(destination_dir, exist_ok=True)
 
@@ -142,7 +82,11 @@ class HoudiniHost:
 
         # UDIM
         for i in range(1001, 1025):
-            path = os.path.join(source_dir, f'texture.{i}.png')
+            path = os.path.join(source_dir, f'texture0.{i}.png')
+            paths.append(path)
+
+        for i in range(1001, 1025):
+            path = os.path.join(source_dir, 'child', f'texture1.{i}.png')
             paths.append(path)
 
         # File sequence
@@ -155,7 +99,20 @@ class HoudiniHost:
             path = os.path.join(source_dir, f'cube.{i:04d}.bgeo.sc')
             paths.append(path)
 
+        # Versions
+        for i in range(1, 4):
+            path = os.path.join(source_dir, f'v{i:03d}', f'cube_v{i:03d}.bgeo.sc')
+            paths.append(path)
+
+        for i in range(1, 4):
+            for j in range(1, 4):
+                path = os.path.join(
+                    source_dir, f'v{i:03d}', f'cube_v{i:03d}.{j:04d}.bgeo.sc'
+                )
+                paths.append(path)
+
         for path in paths:
+            os.makedirs(os.path.dirname(path), exist_ok=True)
             with open(path, 'w') as f:
                 f.write('')
 
@@ -164,3 +121,88 @@ class HoudiniHost:
         text = text.replace('$HIP', '/projects/test/houdini')
         text = text.replace('$JOB', '/projects/test')
         return text
+
+    @staticmethod
+    def expand_files(path: str) -> tuple[str, ...]:
+        absolute_path = HoudiniHost.expand_string(path)
+        glob_pattern = re.sub(r'\$F{?\d*}?|<UDIM>', '*', absolute_path)
+        files = glob.glob(glob_pattern)
+        return tuple(sorted(files))
+
+
+def populate_nodes() -> None:
+    tests_dir = os.path.dirname(os.path.abspath(tests.__file__))
+    source_dir = os.path.join(tests_dir, 'data', 'source')
+
+    # Expression
+    for i in range(2):
+        node = Node(
+            node_path=f'/stage/expression_{i}',
+            path='$HIP/geo/cube/v1/`$OS`.$F4.bgeo.sc',
+        )
+        nodes.append(node)
+
+    # Geometry
+    for i in range(2):
+        node = Node(
+            node_path=f'/stage/geometry_{i}',
+            path='$HIP/geo/cube/v1/cube.$F4.bgeo.sc',
+        )
+        nodes.append(node)
+
+        node = Node(
+            node_path=f'/stage/geometry2_{i}',
+            path='$HIP/geo/cube/v2/cube.$F4.bgeo.sc',
+        )
+        nodes.append(node)
+
+    # Textures
+    for i in range(4):
+        for j in range(2):
+            path = os.path.join(source_dir, f'texture_{i:03d}.png')
+
+            node = Node(
+                node_path=f'/stage/material/image_{j}_{i}',
+                path=path,
+            )
+            nodes.append(node)
+
+    # UDIM
+    for i in range(2):
+        path = os.path.join(source_dir, f'texture{i}.<UDIM>.png')
+        node = Node(
+            node_path=f'/stage/material/image_udim_{i}',
+            path=path,
+        )
+        nodes.append(node)
+
+    # File sequence
+    path = os.path.join(source_dir, f'sequence.$F4.png')
+    for i in range(2):
+        node = Node(
+            node_path=f'/stage/material/image_sequence_{i}',
+            path=path,
+        )
+        nodes.append(node)
+
+    # Versions
+    node = Node(
+        node_path=f'/stage/geometry_version_0',
+        path=os.path.join(source_dir, 'v001', f'cube_v001.bgeo.sc'),
+    )
+    nodes.append(node)
+
+    node = Node(
+        node_path=f'/stage/geometry_version_1',
+        path=os.path.join(source_dir, 'v001', f'cube_v001.$F4.bgeo.sc'),
+    )
+    nodes.append(node)
+
+    node = Node(
+        node_path=f'/stage/geometry_version_2',
+        path=os.path.join(source_dir, 'v005', f'cube_v005.$F4.bgeo.sc'),
+    )
+    nodes.append(node)
+
+
+populate_nodes()

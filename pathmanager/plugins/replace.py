@@ -5,7 +5,7 @@ from collections.abc import Sequence
 from qt_material_icons import MaterialIcon
 from qt_parameters import BoolParameter, Label, ParameterForm, StringParameter
 
-from pathmanager.core import schema
+from .. import schema
 from . import base
 
 
@@ -13,7 +13,7 @@ class ReplacePlugin(base.Plugin):
     name = 'replace'
 
     def preview(self, items: Sequence[schema.Item], kwargs: dict) -> None:
-        plugin_values = kwargs.get('replace', {})
+        plugin_values = kwargs.get(self.name, {})
         search = plugin_values.get('search', '')
         replace = plugin_values.get('replace', '')
         regex = plugin_values.get('regex', False)
@@ -44,7 +44,7 @@ class ReplacePlugin(base.Plugin):
             item.set_preview(path)
 
     def form(self) -> ParameterForm | None:
-        form = ParameterForm('replace')
+        form = ParameterForm(self.name)
 
         search_parm = StringParameter('search')
         search_parm.set_label('From')

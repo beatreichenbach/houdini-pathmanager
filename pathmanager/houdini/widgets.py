@@ -86,12 +86,21 @@ def patch_collapsible_box() -> None:
         return
 
     def paint_event(self, event: QtGui.QPaintEvent) -> None:
-        if self._style != CollapsibleBox.Style.BUTTON:
-            QtWidgets.QFrame.paintEvent(self, event)
-            return
-
         painter = QtGui.QPainter(self)
         style = self.style()
+        palette = self.palette()
+        color = palette.color(
+            QtGui.QPalette.ColorGroup.Normal, QtGui.QPalette.ColorRole.Window
+        )
+
+        if self._style != CollapsibleBox.Style.BUTTON:
+            option = QtWidgets.QStyleOption()
+            option.initFrom(self)
+
+            painter.setPen(QtCore.Qt.PenStyle.NoPen)
+            painter.setBrush(color.lighter(120))
+            painter.drawRect(option.rect)
+            return
 
         if self._collapsed:
             option = QtWidgets.QStyleOptionButton()
@@ -102,11 +111,6 @@ def patch_collapsible_box() -> None:
             element = QtWidgets.QStyle.PrimitiveElement.PE_PanelButtonCommand
             style.drawPrimitive(element, option, painter, self)
         else:
-            palette = self.palette()
-            color = palette.color(
-                QtGui.QPalette.ColorGroup.Normal, QtGui.QPalette.ColorRole.Window
-            )
-
             option = QtWidgets.QStyleOption()
             option.initFrom(self)
 

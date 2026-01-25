@@ -4,8 +4,8 @@ from functools import partial
 
 from qtpy import QtCore, QtGui, QtWidgets
 
-from pathmanager.core import schema
-from pathmanager.core.storage import Storage
+from .. import schema
+from pathmanager.storage import Storage
 from pathmanager.plugins import PluginManager
 from pathmanager.tree import StyledDelegate, StyledFilterWidget
 from pathmanager.widgets import (
@@ -94,10 +94,10 @@ class PathManager(QtWidgets.QWidget):
             widget.set_collapsed(False)
 
         # Toolbar
-        stacks = (Stack(name='path'),)
+        stacks = (Stack(name='path.raw', label='Path'),)
         self.browser.set_stacks(stacks)
 
-        groups = (Group(name='node_path'),)
+        groups = (Group(name='node_type.name', label='Node Type', title='parm_name'),)
         self.browser.set_groups(groups)
 
         toolbar_layout = self.browser.toolbar.layout()
@@ -114,6 +114,7 @@ class PathManager(QtWidgets.QWidget):
         layout.addLayout(button_layout)
 
         self.status_bar = QtWidgets.QStatusBar()
+        self.status_bar.setSizeGripEnabled(False)
         button_layout.addWidget(self.status_bar)
 
         progress_bar = QtWidgets.QProgressBar()

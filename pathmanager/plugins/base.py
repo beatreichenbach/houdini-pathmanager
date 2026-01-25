@@ -7,8 +7,7 @@ from typing import Sequence
 from qt_parameters import ParameterForm
 from qtpy import QtGui, QtWidgets
 
-from pathmanager import utils
-from pathmanager.core import schema
+from pathmanager import schema, utils
 
 
 class Plugin(ABC):

@@ -4,10 +4,9 @@ from qt_parameters import ParameterWidget
 from qtpy import QtCore, QtWidgets
 
 from pathmanager.plugins import PluginManager
+from pathmanager.houdini import ComboParameter
 from qt_parameters import (
-    BoolParameter,
     CollapsibleBox,
-    ComboParameter,
     ParameterForm,
 )
 
@@ -41,7 +40,6 @@ class ParametersWidget(QtWidgets.QWidget):
         self.boxes = {}
         for plugin in plugins:
             form = plugin.form()
-            form.parameter_changed.connect(self.parameter_changed)
             self.forms[plugin.name] = form
 
             box = self.form.add_form(form)

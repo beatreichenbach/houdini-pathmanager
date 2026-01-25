@@ -1,9 +1,6 @@
-from typing import Any
-
-from qt_material_icons import MaterialIcon
 from qtpy import QtCore, QtGui, QtWidgets
 
-from pathmanager.core import schema
+from pathmanager import schema
 from pathmanager.widgets.tree import Field, StyledItemDelegate
 
 ItemDataRole = QtCore.Qt.ItemDataRole

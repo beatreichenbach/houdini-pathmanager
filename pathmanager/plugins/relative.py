@@ -1,8 +1,9 @@
 import enum
 import os.path
+import re
 from collections.abc import Sequence
 
-from pathmanager.core import schema
+from .. import schema
 from pathmanager.houdini import HoudiniHost, EnumParameter
 from qt_parameters import IntParameter, ParameterForm
 from . import base
@@ -18,18 +19,16 @@ class RelativePlugin(base.Plugin):
     name = 'relative'
 
     def preview(self, items: Sequence[schema.Item], kwargs: dict) -> None:
-        plugin_values = kwargs.get('relative', {})
+        values = kwargs.get(self.name, {})
 
-        mode = plugin_values.get('mode', '')
-        parents = plugin_values.get('parents', 0)
-        parents_enable = plugin_values.get('parents_enable', False)
-        parents = parents * parents_enable
+        mode = values.get('mode', '')
+        parents = values.get('parents', 0)
 
         # Absolute
         if mode == AnchorMethod.ABSOLUTE:
             for item in items:
                 path = item.path.raw
-                absolute_path = HoudiniHost.expand_string(path, preserve_frame=True)
+                absolute_path = HoudiniHost.expand_string(path)
                 item.set_preview(absolute_path)
             return
 
@@ -44,11 +43,11 @@ class RelativePlugin(base.Plugin):
         root = HoudiniHost.expand_string(env)
         for item in items:
             path = item.path.raw
-            absolute_path = HoudiniHost.expand_string(path, preserve_frame=True)
+            absolute_path = HoudiniHost.expand_string(path)
             relative_path = os.path.relpath(absolute_path, root)
 
             # Preserve '..'
-            parts = relative_path.split('\\|/')
+            parts = re.split(r'[\\/]', relative_path)
             count = parts.count('..')
 
             if count <= parents:
@@ -56,7 +55,7 @@ class RelativePlugin(base.Plugin):
                 item.set_preview(path)
 
     def form(self) -> ParameterForm | None:
-        form = ParameterForm('relative')
+        form = ParameterForm(self.name)
 
         formatter = lambda member: member.value
 
