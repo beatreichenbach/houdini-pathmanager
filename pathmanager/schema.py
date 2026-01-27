@@ -28,6 +28,7 @@ class ParmTypes(metaclass=meta.IterMeta):
     IMAGE = ParmType('image', icon='image')
     GEOMETRY = ParmType('geometry', icon='deployed_code')
     DIRECTORY = ParmType('directory', icon='folder')
+    STRING = ParmType('string', icon='text_snippet')
 
 
 @dataclasses.dataclass
