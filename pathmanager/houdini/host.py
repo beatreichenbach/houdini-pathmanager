@@ -25,13 +25,9 @@ class HoudiniHost:
 
         for node in nodes:
             for parm in node.parms():
-                template = parm.parmTemplate()
-                if (
-                    isinstance(template, hou.StringParmTemplate)
-                    and template.stringType() == hou.stringParmType.FileReference
-                ):
-                    if item := self._get_item(node, parm):
-                        items.append(item)
+                if item := self._get_item(node, parm):
+                    items.append(item)
+                        
 
         return tuple(items)
 
@@ -45,13 +41,23 @@ class HoudiniHost:
 
     @staticmethod
     def _get_item(node: hou.Node, parm: hou.Parm) -> schema.Item | None:
-        raw = parm.rawValue()
+        template = parm.parmTemplate()
+        if not isinstance(template, hou.StringParmTemplate):
+            return None
 
+        raw = parm.rawValue()
         if not raw:
             return None
 
-        template = parm.parmTemplate()
-        parm_type = HoudiniHost._get_parm_type(template.fileType())
+        if template.stringType() == hou.stringParmType.FileReference:
+            parm_type = HoudiniHost._get_parm_type(template.fileType())
+        elif template.stringType() == hou.stringParmType.Regular:
+            if 'filepath' not in parm.name():
+                return None
+            parm_type = schema.ParmTypes.STRING
+        else:
+            return None
+
         node_type = schema.NodeType(
             name=node.type().name(),
             category=node.type().category().name(),
