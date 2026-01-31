@@ -3,8 +3,13 @@
 ## Development
 ```shell
 python3.11 -m venv venv
-venv/bin/python -m pip install -r requirements.txt
-venv/bin/python -m pip install PySide6
+venv/bin/python -m pip install -e ".[dev]"
+```
+
+## Publish
+
+```shell
+semantic-release version
 ```
 
 ## Screenshot in Houdini

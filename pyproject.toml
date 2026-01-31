@@ -1,0 +1,52 @@
+[project]
+name = "pathmanager"
+version = "0.1.0"
+description = "A tool for SideFX Houdini to manage file paths."
+authors = [
+    {name = "Beat Reichenbach"}
+]
+requires-python = ">=3.10"
+license = {text = "MIT"}
+readme = "README.md"
+dependencies = [
+    "qt_parameters>=1.2,<2",
+    "qtpy>=2.0,<3",
+    "platformdirs>=4.0,<5"
+]
+
+[project.optional-dependencies]
+dev = [
+    "black>=24.0",
+    "python-semantic-release>=9.0",
+    "PySide6",
+]
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["src/pathmanager"]
+
+[tool.semantic_release]
+version_variables = ["src/pathmanager/__init__.py:__version__"]
+version_toml  = ["pyproject.toml:project.version"]
+build_command = """
+    mkdir -p build/pathmanager/python && \
+    cp -r src/python_panels build/pathmanager/ && \
+    cp src/*.xml build/pathmanager/ && \
+    cp src/*.json build/ && \
+    python -m pip install . --target build/pathmanager/python && \
+    rm -rf build/pathmanager/python/bin build/pathmanager/python/*.dist-info && \
+    mkdir -p dist && \
+    cd build && zip -r ../dist/pathmanager.zip .
+"""
+
+[tool.semantic_release.remote]
+ignore_token_for_push = true
+
+[tool.semantic_release.publish]
+upload_to_vcs_release = true
+
+[tool.black]
+skip-string-normalization = true

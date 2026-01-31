@@ -1,3 +1,0 @@
-qt_parameters>=1.2,<2
-qtpy>=2.0,<3
-platformdirs>=4.0,<5
