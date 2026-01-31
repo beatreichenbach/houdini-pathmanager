@@ -9,7 +9,7 @@ venv/bin/python -m pip install -e ".[dev]"
 ## Publish
 
 ```shell
-semantic-release version
+semantic-release version && semantic-release publish
 ```
 
 ## Screenshot in Houdini

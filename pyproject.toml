@@ -26,18 +26,18 @@ requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
-include = ["src/pathmanager"]
+where = ["src"]
+include = ["pathmanager*"]
 
 [tool.semantic_release]
 version_variables = ["src/pathmanager/__init__.py:__version__"]
 version_toml  = ["pyproject.toml:project.version"]
 build_command = """
     mkdir -p build/pathmanager/python && \
-    cp -r src/python_panels build/pathmanager/ && \
-    cp src/*.xml build/pathmanager/ && \
+    cp -r src/python_panels src/*.xml build/pathmanager/ && \
     cp src/*.json build/ && \
     python -m pip install . --upgrade --target build/pathmanager/python && \
-    rm -rf build/pathmanager/python/bin build/pathmanager/python/*.dist-info && \
+    rm -rf build/pathmanager/python/bin build/pathmanager/python/*.dist-info build/bdist.* && \
     mkdir -p dist && \
     cd build && zip -r ../dist/pathmanager.zip .
     cd ..
