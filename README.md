@@ -6,8 +6,8 @@ and copy or move files.
 ![Screenshot](.github/assets/header.png)
 
 ## Installation
-
-Meadow is installed as a Houdini Package.
+ 
+Path Manager is installed as a Houdini Package.
 
 1. Go to the [Releases](https://github.com/beatreichenbach/houdini-pathmanager/releases) page and download the latest `pathmanager.zip`.
 2. Navigate to your Houdini user preferences folder: `$HOME/houdini‹X›.‹Y›`
