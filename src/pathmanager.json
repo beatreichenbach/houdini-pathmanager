@@ -1,6 +1,7 @@
 {
   "env": [
-    {"PYTHONPATH": "$HOUDINI_PACKAGE_PATH/pathmanager"}
+    {"HOUDINI_PATHMANAGER": "$HOUDINI_PACKAGE_PATH/pathmanager"},
+    {"PYTHONPATH": "$HOUDINI_PATHMANAGER/python"}
   ],
-  "hpath": "$HOUDINI_PACKAGE_PATH/pathmanager"
+  "hpath": "$HOUDINI_PATHMANAGER"
 }

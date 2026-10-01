@@ -41,14 +41,14 @@ allow_zero_version = true
 version_variables = ["pathmanager/__init__.py:__version__"]
 version_toml  = ["pyproject.toml:project.version"]
 build_command = """
+    rm -rf build && \
     mkdir -p build/pathmanager/python && \
     cp -r src/python_panels src/*.xml build/pathmanager/ && \
     cp src/*.json build/ && \
-    python -m pip install . --upgrade --target build/pathmanager/python && \
+    uv pip install . --upgrade --target build/pathmanager/python && \
     rm -rf build/pathmanager/python/bin build/pathmanager/python/*.dist-info build/bdist.* && \
     mkdir -p dist && \
     cd build && zip -r ../dist/pathmanager.zip .
-    cd ..
 """
 
 [tool.semantic_release.remote]
