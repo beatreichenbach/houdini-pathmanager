@@ -1,6 +1,6 @@
 [project]
 name = "pathmanager"
-version = "0.1.0"
+version = "0.1.1"
 description = "A tool for SideFX Houdini to manage file paths."
 authors = [
     {name = "Beat Reichenbach"}
