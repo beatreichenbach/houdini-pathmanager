@@ -72,7 +72,7 @@ uv run qtmaterialicons -o pathmanager --names \
 ## Publish
 
 ```shell
-semantic-release version && semantic-release publish
+semantic-release version
 ```
 
 ## Screenshot in Houdini

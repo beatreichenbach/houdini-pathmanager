@@ -26,5 +26,4 @@ Path Manager is installed as a Houdini Package.
 
 ## License
 
-MIT License. Copyright 2026 - Beat Reichenbach.
-See the [License file](LICENSE) for details.
+MIT License. Copyright 2026 - Beat Reichenbach. See the [License file](LICENSE) for details.
