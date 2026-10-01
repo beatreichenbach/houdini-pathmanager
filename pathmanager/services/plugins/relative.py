@@ -47,9 +47,12 @@ class RelativePlugin(base.Plugin):
         root = HoudiniHost.expand_string(env)
         for item in items:
             path = item.path.raw
-            absolute_path = HoudiniHost.expand_string(path)
+
+            if path.startswith(env):
+                continue
+
             try:
-                relative_path = os.path.relpath(absolute_path, root)
+                relative_path = os.path.relpath(path, root)
             except ValueError:
                 continue
 
