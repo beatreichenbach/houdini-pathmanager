@@ -12,18 +12,12 @@ from qtpy import QtCore, QtGui, QtWidgets
 from pathmanager import utils
 from pathmanager.qt_material_icons import MaterialIcon
 
-from .filter import FilterListWidget, FilterWidget
+from .browser_fields import Field, get_value, set_value
+from .browser_filter import FilterListWidget, FilterWidget
+from .browser_state import BrowserState, FilterBrowserState, FilterState
+from .browser_tree import ElementModel, ElementTree, FilterProxyModel
 from .menu import RadioMenu, SelectionMenu
 from .search import SearchLineEdit
-from .state import BrowserState, FilterBrowserState, FilterState
-from .tree import (
-    ElementModel,
-    ElementTree,
-    Field,
-    FilterProxyModel,
-    get_value,
-    set_value,
-)
 
 StateFlag = QtWidgets.QStyle.StateFlag
 CheckState = QtCore.Qt.CheckState

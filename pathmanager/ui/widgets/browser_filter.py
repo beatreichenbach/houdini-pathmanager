@@ -19,7 +19,7 @@ from qtpy import QtCore, QtGui, QtWidgets
 
 from pathmanager.qt_material_icons import MaterialIcon
 
-from .state import FilterState
+from .browser_state import FilterState
 
 ColorGroup = QtGui.QPalette.ColorGroup
 ColorRole = QtGui.QPalette.ColorRole

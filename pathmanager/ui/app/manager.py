@@ -20,7 +20,7 @@ from ..widgets import (
     PreviewField,
     Stack,
 )
-from ..widgets.state import FilterBrowserState
+from ..widgets.browser_state import FilterBrowserState
 from .delegates import StyledDelegate, StyledFilterWidget
 from .parameters import Parameters
 

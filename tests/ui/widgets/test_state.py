@@ -1,6 +1,6 @@
 import dataclasses
 
-from pathmanager.ui.widgets.state import FilterBrowserState, FilterState
+from pathmanager.ui.widgets.browser_state import FilterBrowserState, FilterState
 
 
 def test_from_dict_roundtrip() -> None:

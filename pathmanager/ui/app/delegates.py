@@ -7,9 +7,10 @@ from qtpy import QtCore, QtGui, QtWidgets
 from pathmanager.api import meta
 from pathmanager.hosts.houdini import ComboParameter
 
-from ..widgets.filter import MultiFilterWidget
-from ..widgets.state import FilterState
-from ..widgets.tree import ModelIndex, StyledItemDelegate
+from ..widgets.browser_delegates import StyledItemDelegate
+from ..widgets.browser_fields import ModelIndex
+from ..widgets.browser_filter import MultiFilterWidget
+from ..widgets.browser_state import FilterState
 
 
 class StyledDelegate(StyledItemDelegate):
